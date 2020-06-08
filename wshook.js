@@ -93,4 +93,4 @@ var wsHook = {};
 
     return WSObject
   }
-})()
+})();
