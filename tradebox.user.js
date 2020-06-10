@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         LSViewer
 // @namespace    https://yiyunzhi.github.io/
-// @version      0.1.1
+// @version      0.1.2
 // @description  Extend the page chart and infomation on the page of ls-x.de
 // @author       GF Zhang
 // @include      *ls-x.de/de/tradebox*
