@@ -35,6 +35,7 @@
     // only 10 items be plotted
     const _topMaxLength = 10;
     var _topCollection = [];
+    var _lastMinVlaue = 0;
     // initial highchart
     var myChart = Highcharts.chart('treeMapContainer', {
         colorAxis: {
@@ -55,7 +56,7 @@
                 animation: false,
                 tooltip: {
                     headerFormat: '<b>{point.name}</b><br>',
-                    pointFormat: '<b>{point.name}</b><br>{point.value} Stk.,{point.price} Euro, Ingst: {point.value} Euro'
+                    pointFormat: '<b>{point.name}</b><br>{point.volume} Stk.,{point.price} Euro, Ingst: {point.value} Euro'
                 },
                 dataLabels: {
                     crop: true,
@@ -84,22 +85,32 @@
             return value1 - value2;
         }
     }
-    //function to update the topCollectionArray
-    var updateTopCollection = function (obj) {
-        var _idx = _topCollection.findIndex(function (o) {
-            return o.name === obj.name;
-        });
-        if (_idx != -1) {
-            _topCollection[_idx].value += obj.value;
-            _topCollection[_idx].volume += obj.volume;
-            _topCollection[_idx].price = obj.price;
-        } else {
-            _topCollection.push(obj);
+    // function used to part sort of collection
+    function part_sort(array, part_idx) {
+            return Array.prototype.concat(
+                    array.slice(0, part_idx).sort(dsc_compare('value', true)),
+                    array.slice(part_idx))
         }
-        // sort collection;
-        _topCollection.sort(dsc_compare('value', true));
-        //console.log('result:', _topCollection);
-    };
+    //function to update the dataCollection of myChart
+    var updateTopCollection = function (obj) {
+            var _idx = _topCollection.findIndex(function (o) {
+                return o.name === obj.name;
+            });
+            if (_idx != -1) {
+                _topCollection[_idx].value += obj.value;
+                _topCollection[_idx].volume += obj.volume;
+                _topCollection[_idx].price = obj.price;
+                _topCollection = part_sort(_topCollection, _idx);
+            } else {
+                _topCollection.push(obj);
+                if (obj.value > _lastMinVlaue) {
+                    _topCollection.sort(dsc_compare('value', true));
+                }
+            }
+            _lastMinVlaue = _topCollection[0].value;
+
+
+        };
     //function to update the DataSeries of myChart
     var funcUpdateDataSeries = function () {
         var _series = myChart.series[0];
@@ -134,7 +145,7 @@
             price: funcParsePriceString(array.pop().innerText),
             name: array.pop().innerText
         };
-        _obj.value = _obj.volume * _obj.price;
+        _obj.value = parseFloat(_obj.volume * _obj.price.toFixed(3));
         updateTopCollection(_obj);
         funcUpdateDataSeries();
         $('#updateDate').text(_obj.date);
